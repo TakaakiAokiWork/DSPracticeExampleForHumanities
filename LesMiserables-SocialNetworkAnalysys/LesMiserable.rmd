@@ -1,0 +1,71 @@
+---
+title: "LesMiserables"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+date: "2023-10-30"
+---
+
+# Setup: Library 読み込み
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(igraph)
+library(visNetwork)
+library(dplyr)
+```
+
+# Read network data file
+
+1 Download Les Miserable network data file (GML format) from https://github.com/gephi/gephi/wiki/Datasets.
+2 Extract the downloaded, zipped file.
+
+
+```{r}
+g = read.graph("lesmiserables.gml", format="gml")
+# show summary of the graph
+summary(g)
+
+E(g)$value
+V(g)$label
+```
+
+- Label (Vertex attribute)として、登場人物名が記録されている。
+- Value (Edge attribute)として、同時登場回数が記録されている。
+
+
+
+# Plot the network data
+
+```{r}
+data = toVisNetworkData(g, idToLabel = FALSE)
+visNetwork(nodes = data$nodes, edges = data$edges)
+```
+
+
+# Centrality (中心性)
+## Betweenness
+```{r}
+data = toVisNetworkData(g, idToLabel = FALSE)
+data$nodes$value = betweenness(g,directed=FALSE) # 中心性スコアに応じてノードの大きさを変える
+visNetwork(nodes = data$nodes, edges = data$edges)
+```
+## PageRank
+```{r}
+data = toVisNetworkData(g, idToLabel = FALSE)
+data$nodes$value = page_rank(g)$vector # 中心性スコアに応じてノードの大きさを変える
+visNetwork(nodes = data$nodes, edges = data$edges)
+```
+
+# Community detection (グループ分け)
+
+## Modulariy (Louvain method)
+```{r}
+comm = cluster_louvain(g)
+data = toVisNetworkData(g, idToLabel = FALSE)
+data$nodes$group =  membership(comm) # Community detectionの結果で色分け
+visNetwork(nodes = data$nodes, edges = data$edges) |>
+  visOptions(selectedBy = "label") |> # 特定人物名に注目
+  visInteraction(hideEdgesOnDrag=TRUE,  dragNodes=TRUE,  dragView=TRUE, zoomView=TRUE, navigationButtons=TRUE)  
+```
