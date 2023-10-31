@@ -1,0 +1,51 @@
+---
+title: "都道府県地価調査(ポイントデータの地図表示)"
+output: html_document
+date: "2023-10-31"
+---
+
+# Setup: Library読み込み
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(sf)
+library(tidyverse)
+library(ggplot2)
+library(ggspatial)
+library(viridis)
+```
+
+
+# 都道府県地価調査データを取得する
+「国土数値情報ダウンロードサービス」 by 国土交通省を使って，「国土数値情報 都道府県地価調査(ポイント)」を取得する
+
+https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-L02-v2_3.html
+
+ここでは、滋賀県のデータ(2023年、世界測地系) L02-23_25_GML.zipをダウンロードし、ファイルを解凍する。
+
+
+# 都道府県地価調査データ(geojson file)を読み込む
+解凍したファイルのうち、GeoJsonフォーマットのデータを読み込む
+
+```{r cars}
+data = st_read("L02-23_25.geojson")
+head(data)
+```
+## Data selection
+- 調査価格は、L02_006の列に格納されている。単位は、[円/ｍ2]。
+- 用途区分(住宅地、宅地見込地、商業地、工業地、林地)は、L02_001の列に格納されている。住宅地(000)のみ抽出する
+
+```{r}
+data = data |> filter(L02_001 == '000')|>  # 住宅地(000)のみ抽出する
+  rename(LandPrice = L02_006) # L02_006の列名をLandPriceに変える
+```
+
+# 地図上にplotしてみる
+
+
+```{r}
+ggplot(data) +
+  annotation_map_tile( zoomin = 0, alpha = 0.5) + labs(caption = "\U00a9 OpenStreetMap contributors") +  # use OpenStreetMap data as background
+  geom_sf(aes(color = LandPrice)) + scale_color_viridis() + theme_void()
+```
+
+
