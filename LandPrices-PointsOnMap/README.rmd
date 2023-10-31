@@ -1,7 +1,8 @@
 ---
 title: "都道府県地価調査(ポイントデータの地図表示)"
-output: html_document
-date: "2023-10-31"
+output:
+  github_document: 
+  html_document:
 ---
 
 # Setup: Library読み込み
