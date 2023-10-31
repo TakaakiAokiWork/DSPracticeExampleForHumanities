@@ -1,8 +1,8 @@
 ---
 title: "都道府県地価調査(ポイントデータの地図表示)"
 output:
-  github_document: 
   html_document:
+  github_document: 
 ---
 
 # Setup: Library読み込み
